@@ -1,5 +1,5 @@
 ---
-name: user-story-skill
+name: user-story
 description: "Generiert strukturierte User Stories mit starkem Fokus auf Motivation (Warum?), Metriken (IST/SOLL) und Appetit (Shape-Up + Kano). Nutze diesen Skill wenn jemand eine User Story, ein Feature-Template, oder eine Story mit Akzeptanzkriterien und Gherkin-Testcases erstellen möchte. Trigger-Phrasen: User Story schreiben, Story generieren, Feature beschreiben, Story Template ausfüllen."
 ---
 # User Story Skill
