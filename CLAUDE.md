@@ -1,5 +1,3 @@
-# CLAUDE.md
-
 ## Language
 
 Repo language: German. Conversation language: German (Du-Ton). Code language: English.
