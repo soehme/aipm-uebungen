@@ -1,0 +1,664 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Git for Product Owners</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700&family=DM+Sans:opsz,wght@9..40,400;9..40,600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root {
+  /* Steffen Oehme design system: navy + teal, Montserrat headlines, DM Sans UI.
+     Layout idea: navigation on top, caption as a navy statement block, stage on a white card. */
+  --bg: #F8F7F4;          /* surface */
+  --surface: #FFFFFF;     /* card */
+  --muted-surface: #F0EFEB;
+  --ink: #112659;         /* text dark */
+  --body: #1A2E55;
+  --muted: #4A5568;
+  --line: #E2E0DA;
+  --accent: #0ee8d5;
+  --accent-hover: #0bc4b3;
+  --accent-soft: rgba(14, 232, 213, 0.14);
+  --acc-ink: #112659;     /* text that marks the accent on light ground */
+  --on-accent: #0A1A3A;
+  --warn: #FBBF24;
+  --warn-soft: rgba(251, 191, 36, 0.16);
+  --warn-ink: #9A5B00;
+  --anna: #5d59b2;
+  --anna-soft: rgba(93, 89, 178, 0.12);
+  --navy: #0A1A3A;
+  --navy-text: #EEF3FF;
+  --navy-text-2: #C8D8EE;
+  --shadow-sm: 0 1px 3px rgba(0,0,0,0.06), 0 1px 2px rgba(0,0,0,0.04);
+  --font-display: "Montserrat", "Helvetica Neue", Arial, sans-serif;
+  --font-body: "Montserrat", "Helvetica Neue", Arial, sans-serif;
+  --font-ui: "DM Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --font-mono: "DM Mono", ui-monospace, "SF Mono", Menlo, monospace;
+  color-scheme: light;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #0A1A3A; --surface: #112244; --muted-surface: #1A2E55; --ink: #EEF3FF; --body: #EEF3FF; --muted: #C8D8EE; --line: #24396a;
+    --accent-soft: rgba(14, 232, 213, 0.14); --acc-ink: #0ee8d5; --warn-soft: rgba(251, 191, 36, 0.16); --warn-ink: #FBBF24;
+    --anna: #9d99f0; --anna-soft: rgba(157, 153, 240, 0.16); --navy: #06122a;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #0A1A3A; --surface: #112244; --muted-surface: #1A2E55; --ink: #EEF3FF; --body: #EEF3FF; --muted: #C8D8EE; --line: #24396a;
+  --accent-soft: rgba(14, 232, 213, 0.14); --acc-ink: #0ee8d5; --warn-soft: rgba(251, 191, 36, 0.16); --warn-ink: #FBBF24;
+  --anna: #9d99f0; --anna-soft: rgba(157, 153, 240, 0.16); --navy: #06122a;
+  color-scheme: dark;
+}
+
+* { box-sizing: border-box; }
+html, body { margin: 0; }
+body { background: var(--bg); color: var(--body); font-family: var(--font-body); font-size: 16px; line-height: 1.65; }
+.wrap { max-width: 920px; margin: 0 auto; padding: 32px 16px 48px; display: grid; gap: 16px; }
+
+header { display: grid; gap: 10px; }
+.label { justify-self: start; font-family: var(--font-ui); font-size: 11px; font-weight: 600; letter-spacing: 0.15em; text-transform: uppercase; color: var(--acc-ink); background: var(--accent-soft); border-left: 3px solid var(--accent); padding: 4px 10px; }
+h1 { font-family: var(--font-display); font-weight: 700; text-transform: uppercase; letter-spacing: -0.02em; font-size: clamp(1.7rem, 5vw, 2.6rem); line-height: 1.05; margin: 0; color: var(--ink); text-wrap: balance; }
+h1 .u { text-decoration: underline; text-decoration-color: var(--accent); text-decoration-thickness: 6px; text-underline-offset: 6px; }
+.lede { margin: 0; color: var(--muted); font-family: var(--font-ui); font-size: 15px; }
+
+.player { background: var(--surface); border: 1px solid var(--line); border-radius: 8px; overflow: hidden; box-shadow: var(--shadow-sm); }
+.stage { position: relative; aspect-ratio: 16 / 9; }
+.stage svg.scene { position: absolute; inset: 0; width: 100%; height: 100%; display: none; }
+.stage svg.scene.on { display: block; }
+@media (max-width: 600px) { .stage { aspect-ratio: 1 / 1; } .caption p { min-height: 5.8em; } .btxt { display: none; } .btn { padding: 0; width: 40px; } }
+
+.navbar { display: flex; align-items: flex-start; gap: 12px; padding: 14px; }
+.caption {
+  background: var(--accent-soft); border-left: 4px solid var(--accent); border-radius: 0 8px 8px 0;
+  margin: 0 14px; padding: 16px 24px 20px; display: grid; gap: 8px;
+  font-size: clamp(1.05rem, 2.7vw, 1.3rem); line-height: 1.4; font-weight: 600;
+}
+.eyebrow { display: flex; gap: 12px; justify-content: space-between; font-family: var(--font-ui); font-size: 11px; font-weight: 600; letter-spacing: 0.15em; text-transform: uppercase; color: var(--acc-ink); }
+.caption p { margin: 0; max-width: 60ch; min-height: 4.2em; color: var(--ink); transition: opacity .2s ease; }
+.caption p.fade { opacity: 0; }
+.caption .term { font-family: var(--font-mono); font-weight: 500; font-size: 0.92em; color: var(--ink); background: var(--surface); border: 1px solid var(--accent); padding: 0 .3em; border-radius: 4px; }
+
+.btn {
+  font-family: var(--font-ui); font-size: 15px; font-weight: 600; color: var(--ink);
+  background: var(--accent-soft); border: 1px solid var(--accent); border-radius: 4px;
+  height: 40px; min-width: 40px; padding: 0 16px; display: inline-flex; align-items: center; justify-content: center; gap: 8px; cursor: pointer;
+  transition: background .2s, transform .1s;
+}
+.btn.primary { background: var(--accent); color: var(--on-accent); }
+.btn.primary:hover:not(:disabled) { background: var(--accent-hover); }
+.btn:hover:not(:disabled) { background: rgba(14, 232, 213, 0.22); }
+.btn:active:not(:disabled) { transform: scale(0.97); }
+.btn:disabled { opacity: .35; cursor: default; }
+.stage { cursor: pointer; }
+.btn:focus-visible, .seg:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.btn svg { width: 12px; height: 12px; fill: currentColor; }
+.time { font-family: var(--font-ui); font-variant-numeric: tabular-nums; white-space: nowrap; color: var(--muted); }
+
+.strip { flex: 1; min-width: 0; display: flex; gap: 4px; padding-top: 17px; }
+.seg { flex: var(--w) 1 0; min-width: 0; background: none; border: 0; padding: 0; cursor: pointer; text-align: left; color: var(--muted); font-family: var(--font-ui); }
+.seg .bar { display: block; height: 6px; border-radius: 3px; background: var(--line); overflow: hidden; }
+.seg .fill { display: block; height: 100%; width: 0; background: var(--accent); }
+.seg .lbl { display: block; font-size: 12px; margin-top: 6px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.seg .num { margin-right: 4px; font-weight: 600; }
+.seg.cur { color: var(--ink); font-weight: 600; }
+@media (max-width: 560px) { .seg .name { display: none; } .seg .lbl { text-align: center; } }
+
+.note { font-family: var(--font-ui); font-size: 14px; color: var(--muted); margin: 0; }
+kbd { font-family: var(--font-mono); font-size: .85em; border: 1px solid var(--line); border-bottom-width: 2px; border-radius: 4px; padding: 0 .35em; background: var(--surface); }
+
+/* ---------- SVG scene styling ---------- */
+.scene text { font-family: var(--font-ui); fill: var(--ink); }
+.scene .mono { font-family: var(--font-mono); font-size: 16px; }
+.scene .small { font-size: 13px; fill: var(--muted); }
+.scene .win { fill: var(--surface); stroke: var(--line); stroke-width: 1.5; }
+.scene .winbar { fill: var(--bg); }
+.scene .dot { fill: var(--line); }
+.scene .row rect.rowbg { fill: var(--bg); stroke: var(--line); }
+.scene .doc { fill: var(--surface); stroke: var(--muted); stroke-width: 1.4; }
+.scene .acc-fill { fill: var(--accent); }
+.scene .acc-soft { fill: var(--accent-soft); }
+.scene .ink-fill + text { fill: var(--surface); }
+.scene .acc-text { fill: var(--acc-ink); font-weight: 600; }
+.scene .warn-fill { fill: var(--warn); }
+.scene .warn-soft { fill: var(--warn-soft); stroke: var(--warn); stroke-width: 1.5; }
+.scene .warn-text { fill: var(--warn-ink); font-weight: 600; }
+.scene .on-acc { fill: var(--on-accent); font-weight: 700; }
+.scene .on-dark { fill: #FFFFFF; font-weight: 700; }
+.scene .anna-fill { fill: var(--anna); }
+.scene .anna-soft { fill: var(--anna-soft); }
+.scene .anna-text { fill: var(--anna); }
+.scene .ink-fill { fill: var(--ink); }
+.scene .barfill rect { fill: var(--line); }
+.scene .base { fill: var(--bg); stroke: var(--line); stroke-width: 1.5; }
+.scene .flash { fill: var(--surface); opacity: 0; pointer-events: none; }
+#sc2.s2 .flash { animation: flash .7s ease-out; }
+@keyframes flash { 15% { opacity: .95; } 100% { opacity: 0; } }
+.scene .pk { opacity: 0; transition: transform 1s cubic-bezier(.5,0,.3,1), opacity .3s; }
+#sc4.s2 .pk-push { opacity: 1; transform: translateX(440px); }
+#sc4.s4 .pk-pull { opacity: 1; transform: translateX(-440px); }
+#sc4.s3 .oldlap { opacity: .3; }
+#sc4.s4 .oldlap { opacity: 0; }
+#sc5.s3 .pk-a { opacity: 1; transform: translate(-235px, -185px); }
+#sc5.s4 .pk-b { opacity: 1; transform: translate(-245px, 185px); }
+#sc7.s2 .pk7 { opacity: 1; transform: translate(280px, 45px); }
+#sc3 .cur { transition: transform .9s cubic-bezier(.5,0,.3,1); }
+#sc3.s3 .cur { transform: translateX(-260px); }
+#sc3.s4 .cur { transform: translateX(130px); }
+.scene .link { stroke: var(--muted); stroke-width: 1.5; stroke-dasharray: 4 5; fill: none; }
+.scene .card { fill: var(--surface); stroke: var(--accent); stroke-width: 2; }
+.scene .ph-title { font-family: var(--font-display); }
+
+/* Build-in: hidden until the scene reaches its step class */
+.scene .a { opacity: 0; transform: translateY(10px); transform-box: fill-box; transition: opacity .55s ease, transform .55s ease; }
+.scene .dim { transition: opacity .5s ease; }
+
+/* Chapter 1 steps */
+.scene.s0 .a0, .scene.s1 .a1, .scene.s2 .a2, .scene.s3 .a3, .scene.s4 .a4, .scene.s5 .a5, .scene.s6 .a6, .scene.s7 .a7 { opacity: 1; transform: none; }
+.scene.s1 .h1, .scene.s2 .h2, .scene.s3 .h3, .scene.s4 .h4, .scene.s5 .h5, .scene.s6 .h6, .scene.s7 .h7 { opacity: 0; }
+#sc1.s3 .row.plain { opacity: .45; }
+#sc1.s6 .q { opacity: 0; transform: translateX(14px); }
+#sc1.s6 .qm { opacity: 0; }
+#sc1.s6 .row { opacity: .4; }
+#sc1.s3 .qm { animation: pulse 1.6s ease-in-out 2; }
+
+/* Placeholder scene */
+.ph-title { font-family: var(--font-display); font-size: 30px; font-weight: 700; }
+
+@keyframes pulse { 50% { transform: scale(1.25); } }
+.scene .qm { transform-box: fill-box; transform-origin: center; }
+
+@media (prefers-reduced-motion: reduce) {
+  .scene .a, .scene .dim, .scene .pk, #sc3 .cur, .caption p { transition: none; }
+  #sc2.s2 .flash { animation: none; }
+  .scene .qm { animation: none !important; }
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <span class="label">Git for Product Owners</span>
+    <h1>What Git does for your <span class="u">product context</span></h1>
+    <p class="lede">7 short chapters. Step through with the arrow keys or the buttons. No prior knowledge needed.</p>
+  </header>
+
+  <section class="player" aria-label="Animated tutorial">
+    <div class="navbar">
+      <button class="btn" id="prev" aria-label="Previous step"><svg viewBox="0 0 14 14"><path d="M10 1.5v11L2 7z"/></svg><span class="btxt">Back</span></button>
+      <nav class="strip" id="strip" aria-label="Chapters"></nav>
+      <button class="btn primary" id="next" aria-label="Next step"><span class="btxt" id="nextTxt">Next</span><svg viewBox="0 0 14 14"><path d="M4 1.5v11L12 7z"/></svg></button>
+    </div>
+    <div class="caption" aria-live="polite">
+      <div class="eyebrow"><span id="chapLabel">Chapter 1 · Copies everywhere</span><span class="time" id="time"></span></div>
+      <p id="cap"></p>
+    </div>
+    <div class="stage" id="stage">
+
+      <!-- ===== Chapter 1: Copies everywhere ===== -->
+      <svg class="scene" id="sc1" viewBox="0 0 800 450" role="img" aria-label="A folder fills up with copies of the same concept file, and nobody can tell which copy is current, what changed, or who changed it.">
+        <!-- folder window -->
+        <g class="a a0">
+          <rect class="win" x="50" y="44" width="430" height="378" rx="8"/>
+          <path class="winbar" d="M51 58a13 13 0 0 1 13-13h402a13 13 0 0 1 13 13v22H51z"/>
+          <circle class="dot" cx="72" cy="62" r="5"/><circle class="dot" cx="88" cy="62" r="5"/><circle class="dot" cx="104" cy="62" r="5"/>
+          <path class="acc-fill" d="M126 55h10l3 3h11v10h-24z"/>
+          <text x="158" y="67" font-size="13" font-weight="600">product-context</text>
+        </g>
+
+        <!-- file rows -->
+        <g class="row plain a a0">
+          <rect class="rowbg" x="70" y="96" width="390" height="40" rx="8"/>
+          <path class="doc" d="M86 104h12l5 5v19h-17z"/>
+          <text class="mono" x="116" y="121">concept.md</text>
+        </g>
+        <g class="row plain a a1">
+          <rect class="rowbg" x="70" y="146" width="390" height="40" rx="8"/>
+          <path class="doc" d="M86 154h12l5 5v19h-17z"/>
+          <text class="mono" x="116" y="171">concept_v2.md</text>
+        </g>
+        <g class="row a a1" style="transition-delay:.5s">
+          <rect class="rowbg" x="70" y="196" width="390" height="40" rx="8"/>
+          <path class="doc" d="M86 204h12l5 5v19h-17z"/>
+          <text class="mono" x="116" y="221">concept_final.md</text>
+        </g>
+        <g class="row a a2">
+          <rect class="rowbg" x="70" y="246" width="390" height="40" rx="8"/>
+          <path class="doc" d="M86 254h12l5 5v19h-17z"/>
+          <text class="mono" x="116" y="271">concept_final_v3.md</text>
+        </g>
+        <g class="row a a2" style="transition-delay:.5s">
+          <rect class="rowbg" x="70" y="296" width="390" height="40" rx="8"/>
+          <path class="doc" d="M86 304h12l5 5v19h-17z"/>
+          <text class="mono" x="116" y="321">concept_final_v3_NEW.md</text>
+        </g>
+        <g class="row a a5">
+          <rect class="rowbg" x="70" y="346" width="390" height="40" rx="8"/>
+          <path class="doc" d="M86 354h12l5 5v19h-17z"/>
+          <text class="mono" x="116" y="371">concept_final_v3_NEW_anna.md</text>
+        </g>
+
+        <!-- question marks on the "final" candidates -->
+        <g class="a a3">
+          <g class="qm"><circle class="warn-fill" cx="438" cy="216" r="11"/><text x="438" y="221" text-anchor="middle" class="on-acc" font-size="14">?</text></g>
+          <g class="qm"><circle class="warn-fill" cx="438" cy="266" r="11"/><text x="438" y="271" text-anchor="middle" class="on-acc" font-size="14">?</text></g>
+          <g class="qm"><circle class="warn-fill" cx="438" cy="316" r="11"/><text x="438" y="321" text-anchor="middle" class="on-acc" font-size="14">?</text></g>
+        </g>
+
+        <!-- Lena -->
+        <g class="a a0">
+          <circle class="acc-fill" cx="560" cy="98" r="30"/>
+          <text x="560" y="106" text-anchor="middle" class="on-acc" font-size="22">L</text>
+          <text x="604" y="94" font-size="16" font-weight="600">Lena</text>
+          <text x="604" y="114" class="small">Product Owner</text>
+        </g>
+
+        <!-- questions -->
+        <g class="q a a3">
+          <rect class="warn-soft" x="520" y="170" width="250" height="40" rx="20"/>
+          <text x="540" y="195" class="warn-text" font-size="15">Which one is current?</text>
+        </g>
+        <g class="q a a4">
+          <rect class="warn-soft" x="520" y="222" width="250" height="40" rx="20"/>
+          <text x="540" y="247" class="warn-text" font-size="15">What changed, and why?</text>
+        </g>
+        <g class="q a a4" style="transition-delay:.6s">
+          <rect class="warn-soft" x="520" y="274" width="250" height="40" rx="20"/>
+          <text x="540" y="299" class="warn-text" font-size="15">Who changed it?</text>
+        </g>
+
+        <!-- Anna -->
+        <g class="a a5">
+          <path class="link" d="M460 366 H 590"/>
+          <circle class="anna-fill" cx="616" cy="366" r="24"/>
+          <text x="616" y="373" text-anchor="middle" class="on-dark" font-size="18">A</text>
+          <text x="650" y="362" font-size="15" font-weight="600">Anna</text>
+          <text x="650" y="380" class="small">sends her own copy</text>
+        </g>
+
+        <!-- summary card -->
+        <g class="a a6">
+          <rect class="card" x="510" y="160" width="268" height="170" rx="8"/>
+          <text x="530" y="192" font-size="15" font-weight="600">A copy keeps the text.</text>
+          <text x="530" y="214" class="small">It forgets:</text>
+          <g font-size="15">
+            <circle class="warn-fill" cx="538" cy="240" r="4"/><text x="552" y="245">which came first</text>
+            <circle class="warn-fill" cx="538" cy="266" r="4"/><text x="552" y="271">why it changed</text>
+            <circle class="warn-fill" cx="538" cy="292" r="4"/><text x="552" y="297">who changed it</text>
+          </g>
+        </g>
+      </svg>
+
+<svg class="scene" id="sc2" viewBox="0 0 800 450" role="img" aria-label="Lena edits one file and saves a snapshot. The snapshot stores a note, her name, the time and only the lines that changed.">
+  <g class="a a0">
+    <rect class="win" x="40" y="50" width="300" height="360" rx="8"/>
+    <path class="doc" d="M62 72h12l5 5v19h-17z"/>
+    <text class="mono" x="92" y="90">concept.md</text>
+    <line x1="40" y1="110" x2="340" y2="110" stroke="var(--line)"/>
+    <text x="62" y="145" font-weight="700" font-size="18" font-family="Montserrat, sans-serif"># Concept</text>
+    <text x="62" y="205" font-size="15">Goal 1: Faster decisions</text>
+    <text x="62" y="235" font-size="15">Goal 2: Fewer meetings</text>
+    <g class="barfill"><rect x="62" y="300" width="240" height="8" rx="4"/><rect x="62" y="320" width="205" height="8" rx="4"/><rect x="62" y="340" width="250" height="8" rx="4"/><rect x="62" y="360" width="150" height="8" rx="4"/></g>
+  </g>
+  <g class="a a0 h1"><text x="62" y="175" font-size="15">Target group: all users</text></g>
+  <g class="a a1"><rect class="acc-soft" x="54" y="157" width="274" height="27" rx="4"/><text x="62" y="175" font-size="15" font-weight="600">Target group: POs in B2B</text></g>
+  <g class="a a1" style="transition-delay:.4s"><rect class="acc-soft" x="54" y="247" width="274" height="27" rx="4"/><text x="62" y="265" font-size="15" font-weight="600">Goal 3: Onboarding in 1 day</text></g>
+  <rect class="flash" x="40" y="50" width="300" height="360" rx="8"/>
+
+  <g class="a a2">
+    <line class="link" x1="342" y1="230" x2="366" y2="230"/><line class="link" x1="414" y1="230" x2="438" y2="230"/>
+    <rect class="acc-fill" x="368" y="214" width="44" height="32" rx="4"/><rect class="acc-fill" x="380" y="208" width="15" height="8" rx="2"/>
+    <circle cx="390" cy="230" r="9" fill="var(--surface)"/><circle class="acc-fill" cx="390" cy="230" r="5"/>
+  </g>
+
+  <g class="a a2" style="transition-delay:.3s">
+    <rect class="card" x="440" y="50" width="330" height="360" rx="8"/>
+    <text x="462" y="85" font-size="18" font-weight="700">Snapshot</text>
+    <g class="a a5"><rect class="acc-soft" x="552" y="66" width="70" height="26" rx="4"/><text class="mono acc-text" x="587" y="83" text-anchor="middle" font-size="14">commit</text></g>
+    <g class="a a3"><rect class="acc-soft" x="452" y="104" width="306" height="58" rx="8"/></g>
+    <text x="462" y="126" font-size="15" font-style="italic">“Rewrite target group, add goal 3”</text>
+    <text x="462" y="151" class="small">Lena · 11 Nov, 10:42</text>
+    <g class="a a3">
+      <rect class="acc-fill" x="716" y="112" width="34" height="20" rx="4"/><text x="733" y="126" text-anchor="middle" class="on-acc" font-size="11">why</text>
+      <rect class="acc-fill" x="672" y="137" width="78" height="20" rx="4"/><text x="711" y="151" text-anchor="middle" class="on-acc" font-size="11">who, when</text>
+    </g>
+    <line x1="456" y1="180" x2="754" y2="180" stroke="var(--line)"/>
+    <g class="a a4">
+      <text x="462" y="208" class="small">Stored in this snapshot:</text>
+      <rect class="warn-soft" x="454" y="220" width="302" height="25" rx="4"/><text class="mono warn-text" x="462" y="237" font-size="13.5">− Target group: all users</text>
+      <rect class="acc-soft" x="454" y="250" width="302" height="25" rx="4"/><text class="mono acc-text" x="462" y="267" font-size="13.5">+ Target group: POs in B2B</text>
+      <rect class="acc-soft" x="454" y="280" width="302" height="25" rx="4"/><text class="mono acc-text" x="462" y="297" font-size="13.5">+ Goal 3: Onboarding in 1 day</text>
+      <text x="462" y="342" class="small">Unchanged lines are not stored again.</text>
+      <text x="462" y="362" class="small">Git links them to the previous snapshot.</text>
+    </g>
+  </g>
+</svg>
+
+<svg class="scene" id="sc3" viewBox="0 0 800 450" role="img" aria-label="Snapshots line up on a timeline. Lena jumps back to an older snapshot, recovers a deleted paragraph and saves it as a new snapshot.">
+  <g class="a a5"><text x="588" y="54" text-anchor="end" class="small">The timeline in Git:</text><rect class="acc-soft" x="596" y="36" width="78" height="26" rx="4"/><text class="mono acc-text" x="635" y="53" text-anchor="middle" font-size="14">history</text><rect class="acc-soft" x="690" y="36" width="44" height="26" rx="4"/><text class="mono acc-text" x="712" y="53" text-anchor="middle" font-size="14">log</text></g>
+  <g class="a a0"><line x1="50" y1="150" x2="775" y2="150" stroke="var(--line)" stroke-width="3"/></g>
+  <g class="a a0" style="transition-delay:0.00s"><circle class="acc-fill" cx="90" cy="150" r="9"/><text x="90" y="128" text-anchor="middle" class="small">2 Sep</text></g><g class="a a1" style="transition-delay:0.00s"><text x="90" y="184" text-anchor="middle" font-size="14">Start</text><text x="90" y="202" text-anchor="middle" font-size="14">concept</text></g><g class="a a0" style="transition-delay:0.18s"><circle class="acc-fill" cx="220" cy="150" r="9"/><text x="220" y="128" text-anchor="middle" class="small">18 Sep</text></g><g class="a a1" style="transition-delay:0.15s"><text x="220" y="184" text-anchor="middle" font-size="14">Rewrite</text><text x="220" y="202" text-anchor="middle" font-size="14">target group</text></g><g class="a a0" style="transition-delay:0.36s"><circle class="acc-fill" cx="350" cy="150" r="9"/><text x="350" y="128" text-anchor="middle" class="small">1 Oct</text></g><g class="a a1" style="transition-delay:0.30s"><text x="350" y="184" text-anchor="middle" font-size="14">Add</text><text x="350" y="202" text-anchor="middle" font-size="14">pricing idea</text></g><g class="a a0" style="transition-delay:0.54s"><circle class="acc-fill" cx="480" cy="150" r="9"/><text x="480" y="128" text-anchor="middle" class="small">14 Oct</text></g><g class="a a1" style="transition-delay:0.45s"><text x="480" y="184" text-anchor="middle" font-size="14">Remove</text><text x="480" y="202" text-anchor="middle" font-size="14">pricing idea</text></g><g class="a a0" style="transition-delay:0.72s"><circle class="acc-fill" cx="610" cy="150" r="9"/><text x="610" y="128" text-anchor="middle" class="small">3 Nov</text></g><g class="a a1" style="transition-delay:0.60s"><text x="610" y="184" text-anchor="middle" font-size="14">Add</text><text x="610" y="202" text-anchor="middle" font-size="14">risks</text></g>
+  <g class="a a4"><circle class="acc-fill" cx="740" cy="150" r="9"/><text x="740" y="128" text-anchor="middle" class="small">Today</text><text x="740" y="184" text-anchor="middle" font-size="14" font-weight="600">Restore</text><text x="740" y="202" text-anchor="middle" font-size="14" font-weight="600">pricing idea</text></g>
+  <g class="a a2 h3"><circle cx="480" cy="150" r="16" fill="none" stroke="var(--warn)" stroke-width="2.5"/></g>
+  <g class="a a1"><g class="cur"><circle cx="610" cy="150" r="16" fill="none" stroke="var(--accent)" stroke-width="3"/><text x="610" y="100" text-anchor="middle" class="acc-text" font-size="14" font-weight="700">Lena is here</text></g></g>
+  <g class="a a2"><rect class="win" x="330" y="240" width="310" height="190" rx="8"/></g>
+  <g class="a a2 h3"><text x="352" y="268" class="small">concept.md as of 3 Nov</text><text x="352" y="300" font-size="16" font-weight="700"># Concept</text><text x="352" y="329" font-size="15">Target group: POs in B2B</text><text x="352" y="358" font-size="15">Goals 1–3</text><text x="352" y="387" class="warn-text" font-size="14">No pricing section</text></g>
+  <g class="a a3 h4"><text x="352" y="268" class="small">concept.md as of 1 Oct</text><text x="352" y="300" font-size="16" font-weight="700"># Concept</text><text x="352" y="329" font-size="15">Target group: POs in B2B</text><rect class="acc-soft" x="344" y="340" width="284" height="26" rx="4"/><text x="352" y="358" font-size="15" font-weight="600">Pricing: €12 per seat / month</text><text x="352" y="387" font-size="15">Goals 1–3</text></g>
+  <g class="a a4"><text x="352" y="268" class="small">concept.md today</text><text x="352" y="300" font-size="16" font-weight="700"># Concept</text><text x="352" y="329" font-size="15">Target group: POs in B2B</text><rect class="acc-soft" x="344" y="340" width="284" height="26" rx="4"/><text x="352" y="358" font-size="15" font-weight="600">+ Pricing: €12 per seat / month</text><text x="352" y="387" font-size="15">Risks: data quality</text></g>
+</svg>
+
+<svg class="scene" id="sc4" viewBox="0 0 800 450" role="img" aria-label="Lena uploads her snapshots to an online copy. When her laptop is stolen, she fetches everything back onto a new one.">
+  <g class="a a0 oldlap">
+    <rect class="win" x="60" y="110" width="240" height="150" rx="8"/><path class="base" d="M42 260h276l-14 16h-248z"/>
+    <line x1="90" y1="190" x2="270" y2="190" stroke="var(--line)" stroke-width="3"/><circle class="acc-fill" cx="105" cy="190" r="8"/><circle class="acc-fill" cx="155" cy="190" r="8"/><circle class="acc-fill" cx="205" cy="190" r="8"/><circle class="acc-fill" cx="255" cy="190" r="8"/>
+    <text x="180" y="150" text-anchor="middle" class="small">History</text>
+    <text x="180" y="320" text-anchor="middle" font-size="18" font-weight="700">Lena’s laptop</text>
+  </g>
+  <g class="a a3 h4"><line x1="120" y1="140" x2="240" y2="240" stroke="var(--warn)" stroke-width="6" stroke-linecap="round"/><line x1="240" y1="140" x2="120" y2="240" stroke="var(--warn)" stroke-width="6" stroke-linecap="round"/><text x="180" y="350" text-anchor="middle" class="warn-text" font-size="17">Stolen</text></g>
+  <g class="a a4">
+    <rect class="win" x="60" y="110" width="240" height="150" rx="8"/><path class="base" d="M42 260h276l-14 16h-248z"/>
+    <line x1="90" y1="190" x2="270" y2="190" stroke="var(--line)" stroke-width="3"/>
+    <text x="180" y="150" text-anchor="middle" class="small">History</text>
+    <text x="180" y="320" text-anchor="middle" font-size="18" font-weight="700">Lena’s new laptop</text>
+  </g>
+  <g class="a a1">
+    <rect class="win" x="500" y="110" width="240" height="150" rx="8"/>
+    <g class="acc-fill"><circle cx="522" cy="140" r="7"/><circle cx="532" cy="135" r="9"/><circle cx="543" cy="140" r="7"/><rect x="522" y="140" width="21" height="7"/></g>
+    <text x="560" y="146" font-size="15" font-weight="600">Online copy</text>
+    <line x1="530" y1="190" x2="710" y2="190" stroke="var(--line)" stroke-width="3"/><circle cx="545" cy="190" r="8" fill="none" stroke="var(--line)" stroke-width="2" stroke-dasharray="3 3"/><circle cx="595" cy="190" r="8" fill="none" stroke="var(--line)" stroke-width="2" stroke-dasharray="3 3"/><circle cx="645" cy="190" r="8" fill="none" stroke="var(--line)" stroke-width="2" stroke-dasharray="3 3"/><circle cx="695" cy="190" r="8" fill="none" stroke="var(--line)" stroke-width="2" stroke-dasharray="3 3"/>
+    <text x="620" y="320" text-anchor="middle" font-size="18" font-weight="700">Online copy</text>
+    <text x="620" y="342" text-anchor="middle" class="small">on GitHub, GitLab or similar</text>
+    <rect class="acc-soft" x="585" y="356" width="70" height="26" rx="4"/><text class="mono acc-text" x="620" y="373" text-anchor="middle" font-size="14">remote</text>
+  </g>
+  <g class="a a2"><line class="link" x1="312" y1="160" x2="488" y2="160"/><text x="400" y="146" text-anchor="middle" font-size="16">upload = <tspan class="mono acc-text" font-weight="600">push</tspan></text></g>
+  <g class="a a4"><line class="link" x1="312" y1="232" x2="488" y2="232"/><text x="400" y="258" text-anchor="middle" font-size="16">fetch = <tspan class="mono acc-text" font-weight="600">pull</tspan></text></g>
+  <circle class="acc-fill pk pk-push" cx="105" cy="190" r="8" style="transition-delay:0.00s"/><circle class="acc-fill pk pk-push" cx="155" cy="190" r="8" style="transition-delay:0.15s"/><circle class="acc-fill pk pk-push" cx="205" cy="190" r="8" style="transition-delay:0.30s"/><circle class="acc-fill pk pk-push" cx="255" cy="190" r="8" style="transition-delay:0.45s"/><circle class="acc-fill pk pk-pull" cx="545" cy="190" r="8" style="transition-delay:0.00s"/><circle class="acc-fill pk pk-pull" cx="595" cy="190" r="8" style="transition-delay:0.15s"/><circle class="acc-fill pk pk-pull" cx="645" cy="190" r="8" style="transition-delay:0.30s"/><circle class="acc-fill pk pk-pull" cx="695" cy="190" r="8" style="transition-delay:0.45s"/>
+  <g class="a a5">
+    <rect class="card" x="170" y="392" width="215" height="40" rx="20"/><text x="277" y="418" text-anchor="middle" font-size="16">Before work: <tspan class="mono acc-text" font-weight="600">pull</tspan></text>
+    <rect class="card" x="415" y="392" width="215" height="40" rx="20"/><text x="522" y="418" text-anchor="middle" font-size="16">After work: <tspan class="mono acc-text" font-weight="600">push</tspan></text>
+  </g>
+</svg>
+
+<svg class="scene" id="sc5" viewBox="0 0 800 450" role="img" aria-label="Anna pulls the online copy, adds a snapshot and pushes it. Lena pulls and sees Anna's change with name, date and note.">
+  <g class="a a0">
+    <rect class="win" x="290" y="40" width="220" height="140" rx="8"/>
+    <g class="acc-fill"><circle cx="312" cy="70" r="7"/><circle cx="322" cy="65" r="9"/><circle cx="333" cy="70" r="7"/><rect x="312" y="70" width="21" height="7"/></g>
+    <text x="350" y="76" font-size="15" font-weight="600">Online copy</text>
+    <line x1="320" y1="130" x2="480" y2="130" stroke="var(--line)" stroke-width="3"/><circle class="acc-fill" cx="340" cy="130" r="8"/><circle class="acc-fill" cx="380" cy="130" r="8"/><circle class="acc-fill" cx="420" cy="130" r="8"/>
+    <line class="link" x1="330" y1="182" x2="200" y2="256"/>
+    <rect class="win" x="60" y="260" width="200" height="110" rx="8"/><path class="base" d="M42 370h236l-14 16h-208z"/>
+    <line x1="80" y1="315" x2="240" y2="315" stroke="var(--line)" stroke-width="3"/><circle class="acc-fill" cx="95" cy="315" r="8"/><circle class="acc-fill" cx="135" cy="315" r="8"/><circle class="acc-fill" cx="175" cy="315" r="8"/>
+    <circle class="acc-fill" cx="160" cy="412" r="14"/><text x="160" y="417" text-anchor="middle" class="on-acc" font-size="14">L</text><text x="182" y="417" font-size="16" font-weight="700">Lena</text>
+  </g>
+  <g class="a a0" style="transition-delay:.3s">
+    <line class="link" x1="470" y1="182" x2="600" y2="256"/>
+    <text x="560" y="206" font-size="15" class="mono acc-text" font-weight="600">pull</text>
+    <rect class="win" x="540" y="260" width="200" height="110" rx="8"/><path class="base" d="M522 370h236l-14 16h-208z"/>
+    <line x1="560" y1="315" x2="720" y2="315" stroke="var(--line)" stroke-width="3"/>
+    <circle class="anna-fill" cx="612" cy="412" r="14"/><text x="612" y="417" text-anchor="middle" class="on-dark" font-size="14">A</text><text x="634" y="417" font-size="16" font-weight="700">Anna</text>
+  </g>
+  <g class="a a1"><circle class="acc-fill" cx="575" cy="315" r="8"/><circle class="acc-fill" cx="615" cy="315" r="8"/><circle class="acc-fill" cx="655" cy="315" r="8"/></g>
+  <g class="a a2"><circle class="anna-fill" cx="695" cy="315" r="9"/><text x="695" y="352" text-anchor="middle" class="anna-text" font-size="13" font-weight="600">Add competitors</text></g>
+  <g class="a a3"><text x="584" y="236" font-size="15" class="mono acc-text" font-weight="600">push</text></g>
+  <circle class="anna-fill pk pk-a" cx="695" cy="315" r="9"/>
+  <circle class="anna-fill pk pk-b" cx="460" cy="130" r="9"/>
+  <g class="a a4" style="transition-delay:.9s">
+    <rect class="card" x="282" y="292" width="220" height="62" rx="8"/>
+    <text x="298" y="318" font-size="15" font-weight="700">“Add competitors”</text>
+    <text x="298" y="340" class="small">Anna · 12 Nov, 09:15</text>
+  </g>
+  <g class="a a5"><rect class="acc-soft" x="270" y="388" width="260" height="36" rx="18"/><text x="400" y="411" text-anchor="middle" font-size="15" font-weight="600" class="acc-text">1 folder · 1 history · 2 authors</text></g>
+</svg>
+
+<svg class="scene" id="sc6" viewBox="0 0 800 450" role="img" aria-label="Lena and Anna rewrite the same paragraph. Git marks the clash, the two decide on a combined version and save it as a new snapshot.">
+  <g class="a a0 h1">
+    <rect class="win" x="200" y="40" width="400" height="330" rx="8"/>
+    <path class="doc" d="M222 62h12l5 5v19h-17z"/><text class="mono" x="252" y="80">concept.md</text>
+    <line x1="200" y1="100" x2="600" y2="100" stroke="var(--line)"/>
+    <text x="222" y="134" font-size="16" font-weight="700">## Goals</text>
+    <text x="222" y="162" font-size="15">Goal 1–3 …</text>
+    <rect class="acc-soft" x="214" y="174" width="372" height="28" rx="4"/><text x="222" y="193" font-size="15" font-weight="600">Goal 4: Self-service setup</text><circle class="acc-fill" cx="568" cy="188" r="10"/><text x="568" y="192" text-anchor="middle" class="on-acc" font-size="11">L</text>
+    <text x="222" y="236" font-size="16" font-weight="700">## Risks</text>
+    <rect class="anna-soft" x="214" y="248" width="372" height="28" rx="4"/><text x="222" y="267" font-size="15" font-weight="600">Risk: data quality in the CRM</text><circle class="anna-fill" cx="568" cy="262" r="10"/><text x="568" y="266" text-anchor="middle" class="on-dark" font-size="11">A</text>
+    <circle class="acc-fill" cx="232" cy="330" r="11"/><path d="M226 330l4 4 8-8" fill="none" stroke="var(--surface)" stroke-width="2.5"/>
+    <text x="252" y="335" class="acc-text" font-size="15" font-weight="600">Combined automatically</text>
+  </g>
+  <g class="a a1">
+    <rect class="win" x="30" y="40" width="370" height="112" rx="8"/>
+    <circle class="acc-fill" cx="60" cy="72" r="15"/><text x="60" y="77" text-anchor="middle" class="on-acc" font-size="15">L</text><text x="86" y="78" font-size="15" font-weight="700">Lena’s version</text>
+    <text x="50" y="112" font-size="14" class="small">Target group:</text>
+    <text x="50" y="136" font-size="15" font-weight="600">POs in B2B SaaS companies</text>
+  </g>
+  <g class="a a1" style="transition-delay:.3s">
+    <rect class="win" x="30" y="166" width="370" height="112" rx="8"/>
+    <circle class="anna-fill" cx="60" cy="198" r="15"/><text x="60" y="203" text-anchor="middle" class="on-dark" font-size="15">A</text><text x="86" y="204" font-size="15" font-weight="700">Anna’s version</text>
+    <text x="50" y="238" font-size="14" class="small">Target group:</text>
+    <text x="50" y="262" font-size="15" font-weight="600">POs and product leads in mid-size companies</text>
+  </g>
+  <g class="a a2 h4">
+    <rect x="18" y="26" width="394" height="266" rx="8" fill="none" stroke="var(--warn)" stroke-width="2.5" stroke-dasharray="7 5"/>
+    <rect class="warn-fill" x="130" y="14" width="170" height="26" rx="13"/><text x="215" y="32" text-anchor="middle" class="mono on-acc" font-size="14">merge conflict</text>
+  </g>
+  <g class="a a3 h4">
+    <rect class="win" x="430" y="40" width="340" height="252" rx="8"/>
+    <text x="450" y="70" class="small">What the file shows:</text>
+    <text class="mono warn-text" x="450" y="100" font-size="14">&lt;&lt;&lt;&lt;&lt;&lt;&lt; Lena</text><text class="mono" x="450" y="127" font-size="14">POs in B2B SaaS companies</text><text class="mono warn-text" x="450" y="154" font-size="14">=======</text><text class="mono" x="450" y="181" font-size="14">POs and product leads in</text><text class="mono" x="450" y="208" font-size="14">mid-size companies</text><text class="mono warn-text" x="450" y="235" font-size="14">&gt;&gt;&gt;&gt;&gt;&gt;&gt; Anna</text>
+  </g>
+  <g class="a a4">
+    <rect class="card" x="430" y="40" width="340" height="190" rx="8"/>
+    <text x="450" y="70" class="acc-text" font-size="14" font-weight="600">Decided by Lena and Anna</text>
+    <text x="450" y="104" class="small">Target group:</text>
+    <text x="450" y="130" font-size="15" font-weight="600">POs and product leads in</text>
+    <text x="450" y="154" font-size="15" font-weight="600">mid-size B2B SaaS companies</text>
+    <circle class="acc-fill" cx="462" cy="198" r="13"/><text x="462" y="203" text-anchor="middle" class="on-acc" font-size="13">L</text><circle class="anna-fill" cx="488" cy="198" r="13"/><text x="488" y="203" text-anchor="middle" class="on-dark" font-size="13">A</text>
+  </g>
+  <g class="a a5">
+    <path d="M170 375L300 340M170 375L300 410M300 340L440 375M300 410L440 375" stroke="var(--muted)" stroke-width="2" fill="none"/>
+    <circle cx="170" cy="375" r="8" fill="var(--muted)"/><text x="170" y="402" text-anchor="middle" class="small">before</text>
+    <circle class="acc-fill" cx="300" cy="340" r="9"/><text x="300" y="322" text-anchor="middle" class="small">Lena’s version</text>
+    <circle class="anna-fill" cx="300" cy="410" r="9"/><text x="300" y="440" text-anchor="middle" class="small">Anna’s version</text>
+    <circle class="acc-fill" cx="440" cy="375" r="11"/>
+    <text x="462" y="370" font-size="15" font-weight="700">“Combine target groups”</text>
+    <text x="462" y="391" class="small">new snapshot, both versions stay in the history</text>
+  </g>
+</svg>
+
+<svg class="scene" id="sc7" viewBox="0 0 800 450" role="img" aria-label="An AI agent takes Lena's request, pulls, edits, commits and pushes. On a clash it asks Lena. A glossary links six everyday words to the Git terms.">
+  <g class="h6 dim">
+    <g class="a a0">
+      <circle class="acc-fill" cx="90" cy="86" r="30"/><text x="90" y="94" text-anchor="middle" class="on-acc" font-size="22">L</text><text x="132" y="82" font-size="17" font-weight="700">Lena</text><text x="132" y="102" class="small">Product Owner</text>
+      <circle class="ink-fill" cx="420" cy="86" r="30"/><text x="420" y="94" text-anchor="middle" class="on-acc" font-size="22"></text><path d="M420 68L425 81L438 86L425 91L420 104L415 91L402 86L415 81Z" fill="var(--surface)"/>
+      <text x="420" y="140" text-anchor="middle" font-size="16" font-weight="700">AI agent</text><text x="420" y="158" text-anchor="middle" class="small">uses Git for Lena</text>
+    </g>
+    <g class="a a0 h5"><line class="link" x1="342" y1="160" x2="390" y2="112"/></g>
+    <g class="a a0 h4"><rect class="acc-soft" x="40" y="134" width="300" height="68" rx="8" stroke="var(--accent)"/><text x="58" y="162" font-size="15">“Add the interview results</text><text x="58" y="186" font-size="15">to the personas.”</text></g>
+    <g class="a a4 h5"><rect class="warn-soft" x="30" y="128" width="312" height="88" rx="8"/><text x="48" y="156" font-size="15">Lena and Anna both changed the</text><text x="48" y="178" font-size="15">target group. Which version</text><text x="48" y="200" font-size="15">should stay?</text></g>
+    <g class="a a2">
+      <rect class="win" x="560" y="40" width="210" height="140" rx="8"/>
+      <g class="acc-fill"><circle cx="582" cy="70" r="7"/><circle cx="592" cy="65" r="9"/><circle cx="603" cy="70" r="7"/><rect x="582" y="70" width="21" height="7"/></g><text x="620" y="76" font-size="15" font-weight="600">Online copy</text>
+      <line x1="590" y1="135" x2="745" y2="135" stroke="var(--line)" stroke-width="3"/><circle class="acc-fill" cx="610" cy="135" r="8"/><circle class="acc-fill" cx="650" cy="135" r="8"/><circle class="acc-fill" cx="690" cy="135" r="8"/>
+    </g>
+    <circle class="acc-fill pk pk7" cx="450" cy="90" r="8"/>
+    <g class="h5 dim">
+      <g class="a a1"><rect class="win" x="230" y="240" width="540" height="185" rx="8"/><text x="250" y="266" class="small">What the agent does in Git:</text></g>
+      <g class="a a3"><circle class="acc-fill" cx="258" cy="291" r="4"/><text x="272" y="296" font-size="15">Fetch the latest state</text><rect class="acc-soft" x="680" y="277" width="52" height="26" rx="4"/><text class="mono acc-text" x="706" y="294" text-anchor="middle" font-size="14">pull</text></g><g class="a a1"><circle class="acc-fill" cx="258" cy="325" r="4"/><text x="272" y="330" font-size="15">Edit the files</text></g><g class="a a1" style="transition-delay:.4s"><circle class="acc-fill" cx="258" cy="359" r="4"/><text x="272" y="364" font-size="15">Save snapshot: “Add interview results”</text><rect class="acc-soft" x="680" y="345" width="70" height="26" rx="4"/><text class="mono acc-text" x="715" y="362" text-anchor="middle" font-size="14">commit</text></g><g class="a a2"><circle class="acc-fill" cx="258" cy="393" r="4"/><text x="272" y="398" font-size="15">Upload to the online copy</text><rect class="acc-soft" x="680" y="379" width="52" height="26" rx="4"/><text class="mono acc-text" x="706" y="396" text-anchor="middle" font-size="14">push</text></g>
+    </g>
+    <g class="a a5">
+      <rect class="win" x="230" y="240" width="540" height="185" rx="8"/><text x="250" y="266" class="small">Lena can always ask:</text>
+      <rect class="acc-soft" x="250" y="280" width="380" height="36" rx="18"/><text x="268" y="303" font-size="15">“What changed last week?”</text>
+      <rect class="acc-soft" x="250" y="326" width="380" height="36" rx="18"/><text x="268" y="349" font-size="15">“Who wrote this paragraph?”</text>
+      <rect class="acc-soft" x="250" y="372" width="380" height="36" rx="18"/><text x="268" y="395" font-size="15">“Bring back Monday’s version.”</text>
+    </g>
+  </g>
+  <g class="a a6">
+    <rect class="card" x="120" y="30" width="560" height="390" rx="8"/>
+    <text x="150" y="80" font-size="20" font-weight="700">Everyday word</text><text x="430" y="80" font-size="20" font-weight="700">Git term</text>
+    <text x="150" y="130" font-size="17">Snapshot with a note</text><rect class="acc-soft" x="430" y="110" width="73" height="27" rx="4"/><text class="mono acc-text" x="466" y="128" text-anchor="middle" font-size="15">commit</text><line x1="150" y1="147" x2="650" y2="147" stroke="var(--line)"/><text x="150" y="178" font-size="17">Timeline of snapshots</text><rect class="acc-soft" x="430" y="158" width="138" height="27" rx="4"/><text class="mono acc-text" x="499" y="176" text-anchor="middle" font-size="15">history / log</text><line x1="150" y1="195" x2="650" y2="195" stroke="var(--line)"/><text x="150" y="226" font-size="17">Online copy</text><rect class="acc-soft" x="430" y="206" width="73" height="27" rx="4"/><text class="mono acc-text" x="466" y="224" text-anchor="middle" font-size="15">remote</text><line x1="150" y1="243" x2="650" y2="243" stroke="var(--line)"/><text x="150" y="274" font-size="17">Upload</text><rect class="acc-soft" x="430" y="254" width="55" height="27" rx="4"/><text class="mono acc-text" x="458" y="272" text-anchor="middle" font-size="15">push</text><line x1="150" y1="291" x2="650" y2="291" stroke="var(--line)"/><text x="150" y="322" font-size="17">Fetch</text><rect class="acc-soft" x="430" y="302" width="55" height="27" rx="4"/><text class="mono acc-text" x="458" y="320" text-anchor="middle" font-size="15">pull</text><line x1="150" y1="339" x2="650" y2="339" stroke="var(--line)"/><text x="150" y="370" font-size="17">Two versions clash</text><rect class="acc-soft" x="430" y="350" width="148" height="27" rx="4"/><text class="mono acc-text" x="504" y="368" text-anchor="middle" font-size="15">merge conflict</text>
+  </g>
+</svg>
+    </div>
+
+  </section>
+
+  <p class="note">Keys: <kbd>→</kbd> or <kbd>Space</kbd> next step, <kbd>←</kbd> back. On a phone, tap the picture for the next step.</p>
+</div>
+
+<script>
+(() => {
+  // Each chapter: title, beats [optional phone focus box, caption html]. Beat index = step class on the scene.
+  const CH = [
+    { id: "sc1", title: "Copies everywhere", beats: [
+      [[470,40,320,140], "This is Lena. She is a Product Owner and keeps her product context in Markdown files."],
+      [[50,40,430,300], "Before each bigger change, she saves a copy of the file. Just to be safe."],
+      [[50,40,430,385], "A few weeks later, the folder looks like this."],
+      [[190,150,600,200], "Which of these files is the current one? Lena has to open them all to find out."],
+      [[400,60,390,280], "What changed between version 2 and version 3? Why? And who did it? The files can’t tell."],
+      [[330,140,460,280], "Then her colleague Anna edits a copy too and sends it back. Now there are two “latest” versions."],
+      [[490,140,300,205], "Copies keep the text and lose the story behind it. Git keeps both. Let’s see how."]
+    ]},
+    { id: "sc2", title: "Snapshot", beats: [
+      [[30,40,320,380], "Git works differently. Lena keeps one file: concept.md. No copies."],
+      [[30,40,320,380], "She edits it. She rewrites the target group and adds a third goal."],
+      [[340,40,440,380], "When she’s happy with it, she takes a snapshot. Git saves the state of her files, together with a short note."],
+      [[440,55,330,130], "The note says why. Git adds who and when on its own. That’s exactly what the copies were missing."],
+      [[440,170,330,210], "Git doesn’t save the whole file again. It records only the lines that changed since the last snapshot."],
+      [[440,40,330,380], "In Git, a snapshot is called a <span class=\"term\">commit</span>. When an agent says “I committed your changes”, it took a snapshot."]
+    ]},
+    { id: "sc3", title: "History", beats: [
+      [[40,60,460,170], "Every snapshot lands on a timeline. Over the weeks, Lena’s folder builds up a history."],
+      [[170,60,460,170], "Each point carries its note. Lena reads the timeline like a logbook of her product context."],
+      [[320,60,460,380], "In October she deleted the pricing idea. Today the team wants it back."],
+      [[200,60,460,380], "Lena jumps back to the snapshot from 1 October. The old text is still there, word for word."],
+      [[330,60,450,380], "She brings the paragraph into today’s version and saves a new snapshot. The timeline only grows."],
+      [[40,20,740,420], "Git never overwrites a snapshot, so nothing gets lost. In Git, the timeline is called the <span class=\"term\">history</span> or the <span class=\"term\">log</span>."]
+    ]},
+    { id: "sc4", title: "Online copy", beats: [
+      [[30,90,320,260], "So far, the whole history lives on Lena’s laptop. If the laptop breaks, the history is gone too."],
+      [[290,90,480,300], "That’s why Git keeps a second copy online, on a service like GitHub or GitLab. In Git, this online copy is called the <span class=\"term\">remote</span>."],
+      [[20,90,760,300], "Lena uploads her new snapshots to the online copy. In Git, uploading is called <span class=\"term\">push</span>."],
+      [[20,90,330,290], "One evening, her laptop gets stolen on the train."],
+      [[20,90,760,300], "On her new laptop she fetches everything from the online copy, history included. In Git, fetching is called <span class=\"term\">pull</span>."],
+      [[150,300,500,140], "Rule of thumb: pull before you start, push when you’re done."]
+    ]},
+    { id: "sc5", title: "Working together", beats: [
+      [[280,30,500,400], "Anna wants to work on the same product context. She doesn’t get a file by email. She pulls the online copy."],
+      [[20,20,760,420], "Now both laptops hold the same files and the same history."],
+      [[470,220,310,220], "Anna adds a section on competitors and saves a snapshot with her note."],
+      [[280,30,500,400], "She pushes it. The online copy now holds Lena’s and Anna’s snapshots on one timeline."],
+      [[20,30,500,400], "Next morning, Lena pulls. She sees Anna’s change, with name, date and note."],
+      [[20,20,760,420], "One folder, one history, several authors. Nobody mails files around, and nobody asks which version is the latest."]
+    ]},
+    { id: "sc6", title: "Conflict", beats: [
+      [[190,30,420,350], "Most of the time, Git combines changes on its own. Lena edits the goals, Anna edits the risks. Different places, no problem."],
+      [[15,10,400,290], "On Tuesday, both rewrite the same paragraph: the target group."],
+      [[10,5,410,295], "Git can’t tell which version is right. It stops and marks the spot. In Git, this is a <span class=\"term\">merge conflict</span>."],
+      [[420,30,360,270], "In the file, the spot looks like this: both versions, framed by markers. Agents and editors usually show a friendlier view."],
+      [[420,30,360,270], "A person decides: keep one version, or combine both. Lena and Anna agree on a mix."],
+      [[140,300,560,150], "The decision becomes a new snapshot. The history keeps both versions and the result."]
+    ]},
+    { id: "sc7", title: "The agent", beats: [
+      [[20,40,440,250], "Today Lena works with an AI agent. She tells it what she wants, in her own words."],
+      [[220,230,560,210], "The agent edits the files and saves a snapshot with a clear note."],
+      [[230,30,550,410], "Then it uploads the snapshot to the online copy. The backup is done, and the team sees the change."],
+      [[220,230,560,210], "Before it starts, it fetches the latest state. So it never works on an old version."],
+      [[20,40,440,250], "When two versions clash, the agent stops and asks Lena what to keep. Content decisions stay with her."],
+      [[220,230,560,210], "Lena doesn’t need to type Git commands. She needs to know that a history exists, and that she can ask about it."],
+      [[110,20,580,410], "Six words that will come up. When an agent uses them, you now know what happens in the background."]
+    ]}
+  ];
+
+  // Flat list of steps: [chapter, beat]
+  const STEPS = [];
+  CH.forEach((c, ci) => c.beats.forEach((_, bi) => STEPS.push([ci, bi])));
+  const firstStep = ci => STEPS.findIndex(s => s[0] === ci);
+
+  const $ = id => document.getElementById(id);
+  const cap = $("cap"), strip = $("strip"), counter = $("time"), label = $("chapLabel");
+  const reduce = matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+  CH.forEach((c, i) => {
+    const b = document.createElement("button");
+    b.className = "seg" + (c.draft ? " draft" : "");
+    b.style.setProperty("--w", c.beats.length + 2);
+    b.setAttribute("aria-label", `Chapter ${i + 1}: ${c.title}`);
+    b.innerHTML = `<span class="bar"><span class="fill"></span></span><span class="lbl"><span class="num">${i + 1}</span><span class="name">${c.title}</span></span>`;
+    b.addEventListener("click", () => go(firstStep(i)));
+    strip.appendChild(b);
+  });
+  const segs = [...strip.children];
+
+  // Camera: on phones, zoom the viewBox to the part of the scene the caption talks about.
+  const FULL = [0, 0, 800, 450];
+  const narrow = matchMedia("(max-width: 600px)");
+  let camAnim = null;
+  function focus(sc, box, instant) {
+    const target = (narrow.matches && box) ? box : FULL;
+    const from = (sc.getAttribute("viewBox") || FULL.join(" ")).split(" ").map(Number);
+    cancelAnimationFrame(camAnim);
+    if (reduce || instant) { sc.setAttribute("viewBox", target.join(" ")); return; }
+    const t0 = performance.now(), D = 800;
+    const step = now => {
+      const k = Math.min(1, (now - t0) / D), e = k < .5 ? 2 * k * k : 1 - Math.pow(-2 * k + 2, 2) / 2;
+      sc.setAttribute("viewBox", from.map((v, i) => v + (target[i] - v) * e).join(" "));
+      if (k < 1) camAnim = requestAnimationFrame(step);
+    };
+    camAnim = requestAnimationFrame(step);
+  }
+
+  function setCaption(html) {
+    if (reduce) { cap.innerHTML = html; return; }
+    cap.classList.add("fade");
+    setTimeout(() => { cap.innerHTML = html; cap.classList.remove("fade"); }, 160);
+  }
+
+  let cur = -1, curCh = -1;
+  function go(n, instant) {
+    n = Math.max(0, Math.min(STEPS.length - 1, n));
+    const [ci, bi] = STEPS[n];
+    const c = CH[ci];
+    const sc = c.draft ? $("scDraft") : $(c.id);
+    const chapterChanged = ci !== curCh;
+    if (chapterChanged) {
+      document.querySelectorAll(".scene").forEach(s => s.classList.remove("on"));
+      sc.classList.add("on");
+      if (c.draft) $("phTitle").textContent = `${ci + 1} · ${c.title}`;
+      label.textContent = `Chapter ${ci + 1} · ${c.title}`;
+      segs.forEach((s, i) => { s.classList.toggle("cur", i === ci); s.toggleAttribute("aria-current", i === ci); });
+    }
+    for (let i = 0; i < 12; i++) sc.classList.toggle("s" + i, i <= bi);
+    const beat = c.beats[bi];
+    setCaption(beat[beat.length - 1]);
+    focus(sc, beat.length > 1 ? beat[0] : null, instant || chapterChanged);
+    segs.forEach((s, i) => {
+      const p = i < ci ? 1 : i > ci ? 0 : (bi + 1) / CH[i].beats.length;
+      s.querySelector(".fill").style.width = (p * 100) + "%";
+    });
+    counter.textContent = `Step ${bi + 1} of ${c.beats.length}`;
+    $("prev").disabled = n === 0;
+    $("next").disabled = n === STEPS.length - 1;
+    $("nextTxt").textContent = n === STEPS.length - 1 ? "Done" : "Next";
+    cur = n; curCh = ci;
+    try { history.replaceState(null, "", "#step-" + (n + 1)); } catch (e) {}
+  }
+
+  $("prev").addEventListener("click", () => go(cur - 1));
+  $("next").addEventListener("click", () => go(cur + 1));
+  $("stage").addEventListener("click", () => go(cur + 1));
+  document.addEventListener("keydown", e => {
+    if (e.altKey || e.metaKey || e.ctrlKey) return;
+    if (e.target.closest("button") && (e.key === " " || e.key === "Enter")) return;
+    if (e.key === "ArrowRight" || e.key === " " || e.key === "PageDown") { e.preventDefault(); go(cur + 1); }
+    if (e.key === "ArrowLeft" || e.key === "PageUp") { e.preventDefault(); go(cur - 1); }
+    if (e.key === "Home") go(0);
+    if (e.key === "End") go(STEPS.length - 1);
+  });
+  narrow.addEventListener("change", () => go(cur, true));
+
+  const m = /^#step-(\d+)$/.exec(location.hash);
+  go(m ? +m[1] - 1 : 0, true);
+})();
+</script>
+</body>
+</html>
